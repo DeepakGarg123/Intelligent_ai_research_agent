@@ -8,5 +8,3 @@ def create_vector_store(chunks):
         embedding=embeddings
     )
     return vector_store
-
-    
