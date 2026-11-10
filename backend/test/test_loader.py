@@ -17,7 +17,7 @@ for document in documents:
     print(document.metadata)
     
 #3. CSV loader    
-from backend.document_loader import load_document
+from backend.document_loader import load_document                 
 
 documents = load_document("sample.csv")
 
