@@ -141,3 +141,19 @@ if "vector_store" in st.session_state:
         except Exception as error:
             st.error(f"Question processing failed: {error}")
             st.exception(error)
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            

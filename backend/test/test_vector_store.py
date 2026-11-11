@@ -17,5 +17,4 @@ for result in results:
     
     print(document.page_content)
     print(document.metadata)
-    print("-----------------------------")
     

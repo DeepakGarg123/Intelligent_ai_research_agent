@@ -1,37 +1,26 @@
-
-from langchain_google_genai import ChatGoogleGenerativeAI
+from backend.llm_provider import invoke_with_fallback
 from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 
 load_dotenv()
+prompt = ChatPromptTemplate.from_template(
+    """Answer the question using only the provided context.
+
+    If the answer is not available in the context,
+    say that the document does not contain the answer.
+
+    Context:
+    {context}
+
+    Question:
+    {question}"""
+)
 
 
 def generate_answer(question, context):
+    formatted_prompt = prompt.format(context=context, question=question)
 
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-3.6-flash",
-        temperature=0
-    )
-
-    prompt = ChatPromptTemplate.from_template(
-        """Answer the question using only the provided context.
-
-        If the answer is not available in the context,
-        say that the document does not contain the answer.
-
-        Context:
-        {context}
-
-        Question:
-        {question}"""
-    )
-
-    chain = prompt | llm
-
-    response = chain.invoke({
-        "context": context,
-        "question": question
-    })
+    response = invoke_with_fallback(formatted_prompt)
 
     content = response.content
 

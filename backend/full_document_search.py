@@ -1,11 +1,8 @@
-def create_batches(chunks , batch_size = 20):
+def create_batches(chunks, batch_size=20):
     batches = []
-    for start in range(0 , len(chunks) , batch_size):
-        
-        batch = chunks[start:start + batch_size]
-
+    for start in range(0, len(chunks), batch_size):
+        batch = chunks[start : start + batch_size]
         batches.append(batch)
-
     return batches
 
 
@@ -18,10 +15,7 @@ load_dotenv()
 
 def extract_information_from_batch(batch, query):
 
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-3.6-flash",
-        temperature=0
-    )
+    llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite", temperature=0)
 
     batch_context = ""
 
@@ -30,10 +24,7 @@ def extract_information_from_batch(batch, query):
         metadata = document.metadata
 
         source = metadata.get("source", "Unknown")
-        page = metadata.get(
-            "page_label",
-            metadata.get("page", "Unknown")
-        )
+        page = metadata.get("page_label", metadata.get("page", "Unknown"))
 
         batch_context += (
             f"\n[Chunk {index} | Source: {source} | Page: {page}]\n"
@@ -83,13 +74,17 @@ def extract_information_from_batch(batch, query):
         content = "\n".join(
             block.get("text", "")
             for block in content
-            if isinstance(block, dict)
-            and block.get("type") == "text"
+            if isinstance(block, dict) and block.get("type") == "text"
         )
 
     content = content.replace("```json", "").replace("```", "").strip()
 
-    data = json.loads(content)
+    try:
+        data = json.loads(content, strict=False)
+    except json.JSONDecodeError as error:
+        print("Gemini returned invalid JSON:")
+        print(content)
+        raise ValueError(f"Could not parse Gemini response: {error}")
 
     return data.get("items", [])
 
@@ -104,15 +99,8 @@ def search_entire_document(chunks, query):
 
         print(f"Processing batch {index}/{len(batches)}")
 
-        results = extract_information_from_batch(
-            batch,
-            query
-        )
+        results = extract_information_from_batch(batch, query)
 
         all_results.extend(results)
 
     return all_results
-
-
-
-    
