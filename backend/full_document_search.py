@@ -6,11 +6,7 @@ def create_batches(chunks, batch_size=20):
     return batches
 
 
-import json
-from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
-
-load_dotenv()
+from backend.llm_provider import invoke_with_fallback
 
 
 def extract_information_from_batch(batch, query):
