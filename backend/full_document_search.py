@@ -1,17 +1,23 @@
-def create_batches(chunks, batch_size=20):
-    batches = []
-    for start in range(0, len(chunks), batch_size):
-        batch = chunks[start : start + batch_size]
-        batches.append(batch)
-    return batches
 
+import json
 
 from backend.llm_provider import invoke_with_fallback
 
 
-def extract_information_from_batch(batch, query):
+def create_batches(chunks, batch_size=20):
 
-    llm = ChatGoogleGenerativeAI(model="gemini-3.5-flash-lite", temperature=0)
+    batches = []
+
+    for start in range(0, len(chunks), batch_size):
+
+        batch = chunks[start : start + batch_size]
+
+        batches.append(batch)
+
+    return batches
+
+
+def extract_information_from_batch(batch, query):
 
     batch_context = ""
 
@@ -62,7 +68,7 @@ def extract_information_from_batch(batch, query):
     {batch_context}
     """
 
-    response = llm.invoke(prompt)
+    response = invoke_with_fallback(prompt)
 
     content = response.content
 
@@ -77,12 +83,49 @@ def extract_information_from_batch(batch, query):
 
     try:
         data = json.loads(content, strict=False)
+
     except json.JSONDecodeError as error:
-        print("Gemini returned invalid JSON:")
+
+        print("LLM returned invalid JSON:")
         print(content)
-        raise ValueError(f"Could not parse Gemini response: {error}")
+
+        raise ValueError(f"Could not parse LLM response: {error}")
 
     return data.get("items", [])
+
+
+def remove_duplicate_projects(items):
+
+    unique_projects = {}
+
+    for item in items:
+
+        name = item.get("name", "").strip()
+
+        if not name:
+            continue
+
+        key = name.lower()
+
+        if key not in unique_projects:
+
+            unique_projects[key] = {
+                "name": name,
+                "description": item.get("description", ""),
+                "source": item.get("source", "Unknown"),
+                "pages": [item.get("page", "Unknown")]
+            }
+
+        else:
+
+            existing_pages = unique_projects[key]["pages"]
+
+            new_page = item.get("page", "Unknown")
+
+            if new_page not in existing_pages:
+                existing_pages.append(new_page)
+
+    return list(unique_projects.values())
 
 
 def search_entire_document(chunks, query):
@@ -99,4 +142,6 @@ def search_entire_document(chunks, query):
 
         all_results.extend(results)
 
-    return all_results
+    unique_results = remove_duplicate_projects(all_results)
+
+    return unique_results
