@@ -1,13 +1,17 @@
+
 import os
-from google import genai
+import base64
+
 from dotenv import load_dotenv
+from google import genai
 from google.genai import types
 from groq import Groq
 
-load_dotenv
+load_dotenv()
+
 GEMINI_VISION_MODELS = [
-    "gemini-3.5-flash-lite",
-    "gemini-3.6-flash"
+    "gemini-3.8-flash",
+    "gemini-3.5-flash-lite"
 ]
 
 GROQ_VISION_MODEL = "qwen/qwen3.8-27b"
@@ -21,8 +25,9 @@ Instructions:
 3. Do not summarize or interpret the content.
 4. Do not guess unreadable words or numbers.
 5. Mark unclear text as [UNREADABLE].
-6. Return only extracted text.
+6. Return only the extracted text.
 """
+
 
 def extract_with_gemini(image_bytes, mime_type, model_name):
 
@@ -37,6 +42,7 @@ def extract_with_gemini(image_bytes, mime_type, model_name):
         data=image_bytes,
         mime_type=mime_type
     )
+    print("Sending Image to Gemini")
 
     response = client.models.generate_content(
         model=model_name,
@@ -44,7 +50,9 @@ def extract_with_gemini(image_bytes, mime_type, model_name):
             EXTRACTION_PROMPT,
             image_part
         ]
+        
     )
+    print("response received")
 
     if not response.text:
         raise ValueError("Gemini returned an empty response.")
@@ -60,8 +68,6 @@ def extract_with_groq(image_bytes, mime_type):
         raise ValueError("GROQ_API_KEY is missing.")
 
     client = Groq(api_key=api_key)
-
-    import base64
 
     encoded_image = base64.b64encode(image_bytes).decode("utf-8")
 
@@ -129,4 +135,3 @@ def extract_text_from_image(image_bytes, mime_type="image/png"):
         print(f"Groq Vision failed: {error}")
 
     raise RuntimeError("All vision models failed.")
-
