@@ -15,11 +15,9 @@ with open(image_path, "rb") as image_file:
 
 print("Starting Vision Model Test...")
 
-from backend.vision.vision_provider import extract_with_groq
-
-extracted_text = extract_with_groq(
+extracted_text = extract_text_from_image(
     image_bytes,
-    "image/png"
+    mime_type="image/png"
 )
 
 print("\nExtracted Text:")
