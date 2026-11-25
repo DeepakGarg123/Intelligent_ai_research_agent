@@ -16,17 +16,40 @@ GEMINI_VISION_MODELS = [
 
 GROQ_VISION_MODEL = "qwen/qwen3.8-27b"
 
-EXTRACTION_PROMPT = """
-Extract all readable text from this document image.
 
-Instructions:
-1. Preserve the original wording and numbers.
-2. Preserve tables and their column relationships.
-3. Do not summarize or interpret the content.
-4. Do not guess unreadable words or numbers.
-5. Mark unclear text as [UNREADABLE].
-6. Return only the extracted text.
+EXTRACTION_PROMPT = """
+Extract all readable information from this document image.
+
+Follow these instructions carefully:
+
+1. Preserve the original wording, numbers, dates and units.
+2. Preserve the original document's reading order.
+3. For tables:
+   - Convert tables into Markdown table format.
+   - Preserve all column headers and row labels.
+   - Keep every value under its correct column.
+   - Do not merge unrelated rows or columns.
+4. For charts and graphs:
+   - Extract the chart title.
+   - Identify the X-axis and Y-axis labels.
+   - Extract category names and their corresponding values.
+   - Preserve units and legends.
+   - Clearly represent each category-value relationship.
+5. For diagrams:
+   - Describe the visible components and their relationships.
+   - Preserve labels, arrows and connections wherever readable.
+6. For checkboxes:
+   - Checked checkbox: [✓]
+   - Unchecked checkbox: [ ]
+7. Preserve handwritten text wherever readable.
+8. Mark unclear text or values as [UNREADABLE].
+9. Never guess missing information or calculate values that are not shown.
+10. Do not summarize or interpret the document.
+11. Keep paragraphs, headings and sections in their original order.
+
+Return the extracted information in clean Markdown format.
 """
+
 
 
 def extract_with_gemini(image_bytes, mime_type, model_name):
